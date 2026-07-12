@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { BorrowedWordsQuestion } from "@/domain/questions/types";
+import { loadProgress, saveProgress } from "@/infrastructure/progress/progress-store";
 
 interface MatchGameProps {
   questions: BorrowedWordsQuestion[];
@@ -31,6 +32,7 @@ export function MatchGame({ questions }: MatchGameProps) {
   const [feedback, setFeedback] = useState("請先選一張借代詞或實際所指卡。 ");
   const [explanation, setExplanation] = useState("");
   const [attempts, setAttempts] = useState(0);
+  const awarded = useRef(false);
 
   function choose(card: Card) {
     if (matched.has(card.questionId)) return;
@@ -61,6 +63,17 @@ export function MatchGame({ questions }: MatchGameProps) {
   }
 
   const complete = matched.size === questions.length;
+
+  useEffect(() => {
+    if (!complete || awarded.current) return;
+    awarded.current = true;
+    const progress = loadProgress();
+    saveProgress({
+      ...progress,
+      completedZones: Array.from(new Set([...progress.completedZones, "term-match"])),
+      experience: progress.experience + questions.length * 100,
+    });
+  }, [complete, questions.length]);
 
   return (
     <section className="game-shell" aria-labelledby="game-title">

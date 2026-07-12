@@ -55,4 +55,31 @@ describe("validateQuestion", () => {
       );
     }
   });
+
+  it("拒絕缺少解析或使用無效難度的資料", () => {
+    const result = validateQuestion({
+      id: "Q003",
+      type: "distinction",
+      grade: [8],
+      difficulty: "超難",
+      prompt: "判斷下列修辭",
+      options: ["借代", "借喻"],
+      correctAnswers: ["借代"],
+      metonym: "杜康",
+      referent: "酒",
+      relation: "人物與相關事物",
+      rationale: "",
+      context: "何以解憂？唯有杜康。",
+      source: null,
+      reviewers: [],
+      status: "draft",
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.errors).toEqual(
+        expect.arrayContaining(["題目難度無效", "題目必須有完整解析"]),
+      );
+    }
+  });
 });

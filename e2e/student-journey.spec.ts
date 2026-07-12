@@ -19,3 +19,10 @@ test("手機版首頁沒有水平溢位", async ({ page }) => {
   expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.innerWidth);
 });
 
+test("學生可完成語境判讀並看到解析", async ({ page }) => {
+  await page.goto("/context");
+  await expect(page.getByRole("heading", { name: "何以解憂？唯有杜康。" })).toBeVisible();
+  await page.getByRole("button", { name: "酒" }).click();
+  await expect(page.getByRole("status")).toContainText("答對了");
+  await expect(page.getByText(/人物或專名代相關事物/)).toBeVisible();
+});

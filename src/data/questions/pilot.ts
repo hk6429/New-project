@@ -51,7 +51,7 @@ function pilot(
   };
 }
 
-export const pilotQuestions: BorrowedWordsQuestion[] = [
+const basePilotQuestions: BorrowedWordsQuestion[] = [
   pilot("Q001", "杜康", "酒", "何以解憂？唯有杜康。", "人物或專名代相關事物", "杜康相傳善於造酒，後世以其名代稱酒。", moeSource),
   pilot("Q002", "黃髮", "老人", "黃髮垂髫，並怡然自樂。", "特徵代本體", "古人以老人髮色轉黃的特徵代稱老人。", schoolSource),
   pilot("Q003", "垂髫", "兒童", "黃髮垂髫，並怡然自樂。", "特徵代本體", "古代兒童未束髮，頭髮下垂，因此以垂髫代稱兒童。", schoolSource),
@@ -70,3 +70,36 @@ export const pilotQuestions: BorrowedWordsQuestion[] = [
   pilot("Q016", "相印", "宰相權位", "而後佩六國相印，權傾一時。", "器物代職位權力", "官印是職位與權力的標誌，相印在此代稱宰相的權位。", schoolSource, "intermediate"),
 ];
 
+const relationPool = [
+  "特徵或標誌代本體",
+  "部分代全體",
+  "人物或專名代相關事物",
+  "器物或材料代活動",
+  "具體事物代抽象概念",
+  "相關場所或稱謂代人物",
+];
+
+function relationOptions(correct: string): string[] {
+  return [
+    correct,
+    ...relationPool.filter((option) => option !== correct).slice(0, 3),
+  ];
+}
+
+export const pilotQuestions: BorrowedWordsQuestion[] = basePilotQuestions.flatMap((question) => [
+  { ...question, id: `${question.id}-T`, type: "term-match" },
+  {
+    ...question,
+    id: `${question.id}-C`,
+    type: "context-match",
+    prompt: question.context,
+  },
+  {
+    ...question,
+    id: `${question.id}-R`,
+    type: "relation",
+    prompt: `「${question.metonym}」代稱「${question.referent}」，兩者最接近哪一種關係？`,
+    options: relationOptions(question.relation),
+    correctAnswers: [question.relation],
+  },
+]);

@@ -17,6 +17,7 @@ export default function HomePage() {
         </Link>
         <nav aria-label="主要導覽">
           <Link href="/adventure">冒險地圖</Link>
+          <Link href="/review">錯題復習</Link>
           <Link href="/teacher">教師入口</Link>
         </nav>
       </header>
@@ -70,4 +71,3 @@ export default function HomePage() {
     </>
   );
 }
-
