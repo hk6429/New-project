@@ -161,7 +161,7 @@ export function TeacherConsole() {
     <section className="teacher-console">
       <div className="teacher-console-head">
         <div><p className="eyebrow">教師控制臺</p><h1>建立課堂活動</h1></div>
-        <button className="button secondary" type="button" onClick={() => getSupabaseBrowserClient().auth.signOut()}>登出</button>
+        <div className="teacher-console-actions"><a className="button primary" href="/teacher/review">進入題庫審核</a><button className="button secondary" type="button" onClick={() => getSupabaseBrowserClient().auth.signOut()}>登出</button></div>
       </div>
       <form className="create-session-form" onSubmit={createSession}>
         <label htmlFor="session-title">活動名稱</label>
