@@ -7,12 +7,15 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Database } from "@/types/database";
 
 type ClassroomSession = Database["public"]["Tables"]["classroom_sessions"]["Row"];
+type ClassroomStats = { participants: number; responses: number; correctRate: number };
 
 export function TeacherConsole() {
   const [email, setEmail] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const [isTeacher, setIsTeacher] = useState(false);
   const [sessions, setSessions] = useState<ClassroomSession[]>([]);
+  const [selectedSession, setSelectedSession] = useState<ClassroomSession | null>(null);
+  const [stats, setStats] = useState<ClassroomStats>({ participants: 0, responses: 0, correctRate: 0 });
   const [title, setTitle] = useState("借代快攻賽");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -51,6 +54,33 @@ export function TeacherConsole() {
     return () => data.subscription.unsubscribe();
   }, [refreshTeacherState]);
 
+  const refreshStats = useCallback(async (sessionId: string) => {
+    const supabase = getSupabaseBrowserClient();
+    const [{ count: participantCount }, { data: answers }] = await Promise.all([
+      supabase.from("participants").select("id", { count: "exact", head: true }).eq("session_id", sessionId),
+      supabase.from("responses").select("is_correct").eq("session_id", sessionId),
+    ]);
+    const responseCount = answers?.length ?? 0;
+    const correctCount = answers?.filter((answer) => answer.is_correct).length ?? 0;
+    setStats({
+      participants: participantCount ?? 0,
+      responses: responseCount,
+      correctRate: responseCount ? Math.round((correctCount / responseCount) * 100) : 0,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!selectedSession) return;
+    const supabase = getSupabaseBrowserClient();
+    void refreshStats(selectedSession.id);
+    const channel = supabase
+      .channel(`teacher-session-${selectedSession.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "participants", filter: `session_id=eq.${selectedSession.id}` }, () => void refreshStats(selectedSession.id))
+      .on("postgres_changes", { event: "*", schema: "public", table: "responses", filter: `session_id=eq.${selectedSession.id}` }, () => void refreshStats(selectedSession.id))
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [refreshStats, selectedSession]);
+
   async function requestLogin(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
@@ -84,6 +114,7 @@ export function TeacherConsole() {
         .single();
       if (data) {
         setSessions((current) => [data, ...current]);
+        setSelectedSession(data);
         setMessage(`活動已建立，加入碼：${data.code}`);
         setBusy(false);
         return;
@@ -144,9 +175,21 @@ export function TeacherConsole() {
           <article key={session.id}>
             <div><strong>{session.title}</strong><span>{session.status}</span></div>
             <b>{session.code}</b>
+            <button className="button secondary" type="button" onClick={() => setSelectedSession(session)}>查看即時統計</button>
           </article>
         ))}
       </div>
+      {selectedSession && (
+        <section className="live-dashboard" aria-labelledby="live-dashboard-title">
+          <div className="panel-heading"><div><p className="eyebrow">即時課堂資料</p><h2 id="live-dashboard-title">{selectedSession.title}</h2></div><strong className="dashboard-code">{selectedSession.code}</strong></div>
+          <div className="metric-grid">
+            <article><span>已加入</span><strong>{stats.participants}</strong><small>位學生</small></article>
+            <article><span>已收到</span><strong>{stats.responses}</strong><small>筆作答</small></article>
+            <article><span>全班正確率</span><strong>{stats.correctRate}%</strong><small>即時更新</small></article>
+          </div>
+          <p className="privacy-note">學生加入或送出答案後，統計會自動更新；不顯示學生 Email 或其他個人資料。</p>
+        </section>
+      )}
     </section>
   );
 }

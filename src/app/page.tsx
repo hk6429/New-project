@@ -17,6 +17,7 @@ export default function HomePage() {
         </Link>
         <nav aria-label="主要導覽">
           <Link href="/adventure">冒險地圖</Link>
+          <Link href="/join">加入課堂</Link>
           <Link href="/review">錯題復習</Link>
           <Link href="/teacher">教師入口</Link>
         </nav>
@@ -30,6 +31,7 @@ export default function HomePage() {
             <p className="hero-lead">杜康為什麼不是人，而是一杯酒？從卡牌配對到古文判讀，成為看穿借代線索的修辭偵探。</p>
             <div className="hero-actions">
               <Link className="button primary" href="/play">開始第一局</Link>
+              <Link className="button secondary" href="/join">輸入課堂活動碼</Link>
               <Link className="button secondary" href="/adventure">查看冒險地圖</Link>
             </div>
             <p className="privacy-note">免註冊・進度保存在目前裝置・手機即可遊玩</p>

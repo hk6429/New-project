@@ -258,7 +258,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_classroom_question: {
+        Args: { requested_position: number; requested_session_id: string }
+        Returns: {
+          context: string
+          difficulty: string
+          options: Json
+          prompt: string
+          question_id: string
+          question_position: number
+          question_type: string
+          total: number
+        }[]
+      }
+      submit_classroom_answer: {
+        Args: {
+          requested_question_id: string
+          requested_session_id: string
+          submitted_answer: string
+          submitted_duration_ms?: number
+        }
+        Returns: {
+          answered_count: number
+          correct_answer: string
+          is_correct: boolean
+          rationale: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
