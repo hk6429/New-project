@@ -11,9 +11,11 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "questions:export": "tsx scripts/export-questions.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.110.2",
     "next": "^16.2.10",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
@@ -31,6 +33,7 @@
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.2.10",
     "jsdom": "^29.1.1",
+    "tsx": "^4.23.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.10"
   },

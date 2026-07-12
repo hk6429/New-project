@@ -174,6 +174,22 @@ main { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
 .trouble-row { display: grid; grid-template-columns: minmax(220px, 1fr) 2fr 60px; gap: 18px; align-items: center; padding: 14px 0; border-top: 1px solid var(--line); }
 .trouble-row progress { width: 100%; accent-color: var(--gold); }
 .trouble-row strong { text-align: right; font-variant-numeric: tabular-nums; }
+.teacher-auth { max-width: 720px; padding: clamp(28px, 6vw, 56px); border: 1px solid var(--line); background: rgba(21,34,60,.72); }
+.teacher-auth h1, .teacher-console h1 { margin: 0; font-family: "Noto Serif TC", "PMingLiU", serif; font-size: clamp(2rem, 5vw, 4rem); line-height: 1.2; }
+.teacher-auth > p { color: var(--ink-soft); }
+.teacher-auth form, .create-session-form { display: grid; grid-template-columns: 1fr auto; gap: 10px 12px; margin-top: 24px; }
+.teacher-auth label, .create-session-form label { grid-column: 1 / -1; color: var(--ink-soft); font-size: .9rem; }
+.teacher-auth input, .create-session-form input { min-height: 48px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--night); color: var(--ink); }
+.teacher-console { display: grid; gap: 24px; }
+.teacher-console-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+.create-session-form { max-width: 760px; padding: 24px; border: 1px solid var(--line); background: rgba(21,34,60,.72); }
+.console-message { padding: 14px 18px; border-left: 4px solid var(--jade); background: rgba(88,206,177,.08); }
+.session-list { display: grid; gap: 10px; }
+.session-list h2 { margin-bottom: 4px; }
+.session-list article { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 18px 20px; border: 1px solid var(--line); background: rgba(21,34,60,.62); }
+.session-list article div { display: flex; flex-direction: column; }
+.session-list article span { color: var(--ink-soft); font-size: .82rem; }
+.session-list article b { color: var(--gold); font-size: 1.7rem; letter-spacing: .12em; font-variant-numeric: tabular-nums; }
 
 @media (max-width: 900px) {
   .hero-section { grid-template-columns: 1fr; padding-top: 54px; }
@@ -208,6 +224,10 @@ main { width: min(1180px, calc(100% - 32px)); margin: 0 auto; }
   .progress-summary { grid-template-columns: 1fr; margin-top: 0; }
   .trouble-row { grid-template-columns: 1fr auto; gap: 8px; }
   .trouble-row progress { grid-column: 1 / -1; grid-row: 2; }
+  .teacher-auth form, .create-session-form { grid-template-columns: 1fr; }
+  .teacher-auth label, .create-session-form label { grid-column: auto; }
+  .teacher-console-head { flex-direction: column; }
+  .session-list article { align-items: flex-start; flex-direction: column; }
 }
 
 @media (prefers-reduced-motion: reduce) {
