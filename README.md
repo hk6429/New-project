@@ -8,6 +8,11 @@
 - 試行題庫：16 題，已有來源與解析，狀態統一為「待兩名國文教師複核」。
 - 尚未冒充完成：240 題正式題庫、Supabase 即時班級活動與題庫審核後台仍依開發計畫逐步製作。
 
+## 線上預覽
+
+- [Vercel Preview](https://borrowed-words-preview-20260712-bcjslzw1n-hk6429s-projects.vercel.app)
+- [GitHub repository](https://github.com/hk6429/New-project)
+
 ## 核心特色
 
 - 借代詞與實際所指配對
