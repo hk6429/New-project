@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { normalizeActivityCode, normalizeNickname } from "@/domain/classroom/join-input";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Json } from "@/types/database";
@@ -27,6 +27,10 @@ function optionsFromJson(value: Json): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
 
+function currentTimestamp(): number {
+  return Date.now();
+}
+
 export function StudentClassroom() {
   const [code, setCode] = useState("");
   const [nickname, setNickname] = useState("");
@@ -37,7 +41,7 @@ export function StudentClassroom() {
   const [questionLimit, setQuestionLimit] = useState(10);
   const [result, setResult] = useState<AnswerResult | null>(null);
   const [score, setScore] = useState(0);
-  const [startedAt, setStartedAt] = useState(0);
+  const startedAt = useRef(0);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -51,7 +55,7 @@ export function StudentClassroom() {
     setQuestion(data[0]);
     setPosition(targetPosition);
     setResult(null);
-    setStartedAt(Date.now());
+    startedAt.current = currentTimestamp();
   }
 
   async function joinClassroom(event: FormEvent) {
@@ -123,7 +127,7 @@ export function StudentClassroom() {
       requested_session_id: sessionId,
       requested_question_id: question.question_id,
       submitted_answer: answer,
-      submitted_duration_ms: Date.now() - startedAt,
+      submitted_duration_ms: currentTimestamp() - startedAt.current,
     });
     if (error || !data?.[0]) {
       setMessage(error?.message ?? "答案送出失敗，請再試一次");

@@ -2,6 +2,13 @@
 
 給臺灣七至九年級學生使用的借代修辭卡牌遊戲。學生可免登入自主闖關，教師可用活動代碼建立課堂挑戰。
 
+## 專案來源
+
+- 原始倉庫：[hk6429/New-project](https://github.com/hk6429/New-project)
+- 搬移基準：`04aa4509142e1b9f5f55c608030ef9716539365b`
+- 主專案路徑：`generated-pages/borrowed-words-academy/`
+- 搬入後由 `naicheng-codex-agent` 統一管理版本，不與原倉庫自動雙向同步。
+
 ## 目前里程碑
 
 - 已完成：專業視覺首頁、六區地圖、詞義配對、語境判讀、關係分類、錯題復習，以及 Supabase 教師 Email 登入與課堂活動碼建立。
@@ -57,3 +64,9 @@ npm run test:e2e
 ## 部署
 
 預設使用 Vercel Preview。預覽版完成內容、功能、無障礙與多裝置驗收後，再決定是否發布到正式環境。
+
+Vercel 專案的 Root Directory 必須設為：
+
+```text
+generated-pages/borrowed-words-academy
+```

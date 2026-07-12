@@ -6,11 +6,13 @@ test("學生從首頁進入並完成第一組借代配對", async ({ page }) => 
   await page.getByRole("link", { name: "開始第一局" }).click();
   await expect(page.getByRole("heading", { name: "找出借代詞的真正身分" })).toBeVisible();
 
-  await page.getByRole("button", { name: "借代詞：杜康" }).click();
-  await page.getByRole("button", { name: "實際所指：酒" }).click();
+  const firstTerm = page.locator('[data-card-side="metonym"]').first();
+  const questionId = await firstTerm.getAttribute("data-question-id");
+  await firstTerm.click();
+  await page.locator(`[data-question-id="${questionId}"][data-card-side="referent"]`).click();
 
   await expect(page.getByRole("status")).toContainText("配對成功");
-  await expect(page.getByText(/杜康相傳善於造酒/)).toBeVisible();
+  await expect(page.locator(".explanation")).toContainText("解析：");
 });
 
 test("手機版首頁沒有水平溢位", async ({ page }) => {
@@ -21,8 +23,15 @@ test("手機版首頁沒有水平溢位", async ({ page }) => {
 
 test("學生可完成語境判讀並看到解析", async ({ page }) => {
   await page.goto("/context");
-  await expect(page.getByRole("heading", { name: "何以解憂？唯有杜康。" })).toBeVisible();
-  await page.getByRole("button", { name: "酒" }).click();
-  await expect(page.getByRole("status")).toContainText("答對了");
-  await expect(page.getByText(/人物或專名代相關事物/)).toBeVisible();
+  await expect(page.locator(".context-card h1")).toBeVisible();
+  await page.locator(".option-grid .quiz-option").first().click();
+  await expect(page.getByRole("status")).toBeVisible();
+  await expect(page.getByText(/解析：/)).toBeVisible();
+});
+
+test("六個冒險區都已開放", async ({ page }) => {
+  await page.goto("/adventure");
+  await expect(page.locator(".map-node")).toHaveCount(6);
+  await expect(page.locator(".map-action")).toHaveCount(6);
+  await expect(page.getByText("即將開放")).toHaveCount(0);
 });

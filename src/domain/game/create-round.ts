@@ -1,4 +1,5 @@
 import type { BorrowedWordsQuestion } from "@/domain/questions/types";
+import { shuffle } from "./shuffle";
 
 interface RoundOptions {
   count: number;
@@ -13,8 +14,5 @@ export function createRound(
     (question) => question.status !== "disputed" && question.status !== "disabled",
   );
 
-  return [...eligible]
-    .sort(() => random() - 0.5)
-    .slice(0, Math.min(count, eligible.length));
+  return shuffle(eligible, random).slice(0, Math.min(count, eligible.length));
 }
-

@@ -34,6 +34,7 @@ function pilot(
 
   return {
     id,
+    coreTopicId: id,
     type: "term-match",
     grade: [7, 8, 9],
     difficulty,
@@ -45,7 +46,17 @@ function pilot(
     relation,
     rationale,
     context,
+    clues: [relation, context],
+    distractorRationales: Object.fromEntries(distractors.map((item) => [item, `「${item}」與此語境中的借代線索不相符。`])),
     source,
+    license: "source-verified-license-pending",
+    creator: "借代偵探學院試行題庫",
+    checkers: [],
+    disputeNote: null,
+    statistics: { attempts: 0, correct: 0, optionCounts: {} },
+    version: 1,
+    createdAt: "2026-07-12",
+    updatedAt: "2026-07-12",
     reviewers: [],
     status: "pending-review",
   };
@@ -92,7 +103,7 @@ export const pilotQuestions: BorrowedWordsQuestion[] = basePilotQuestions.flatMa
     ...question,
     id: `${question.id}-C`,
     type: "context-match",
-    prompt: question.context,
+    prompt: `${question.context}\n句中「${question.metonym}」代稱什麼？`,
   },
   {
     ...question,
@@ -101,5 +112,8 @@ export const pilotQuestions: BorrowedWordsQuestion[] = basePilotQuestions.flatMa
     prompt: `「${question.metonym}」代稱「${question.referent}」，兩者最接近哪一種關係？`,
     options: relationOptions(question.relation),
     correctAnswers: [question.relation],
+    distractorRationales: Object.fromEntries(
+      relationOptions(question.relation).filter((item) => item !== question.relation).map((item) => [item, `此題的替代依據不是「${item}」。`]),
+    ),
   },
 ]);

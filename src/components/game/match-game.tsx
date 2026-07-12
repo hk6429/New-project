@@ -1,8 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { shuffle } from "@/domain/game/shuffle";
 import type { BorrowedWordsQuestion } from "@/domain/questions/types";
-import { loadProgress, saveProgress } from "@/infrastructure/progress/progress-store";
+import { loadProgress, recordAchievement, saveProgress } from "@/infrastructure/progress/progress-store";
+import { RewardCard } from "@/components/rewards/reward-card";
 
 interface MatchGameProps {
   questions: BorrowedWordsQuestion[];
@@ -16,23 +19,40 @@ type Card = {
 };
 
 export function MatchGame({ questions }: MatchGameProps) {
-  const cards = useMemo<Card[]>(
+  const roundQuestions = useMemo(() => questions.slice(0, 4), [questions]);
+  const orderedCards = useMemo<Card[]>(
     () =>
-      questions.flatMap((question, index) => {
+      roundQuestions.flatMap((question, index) => {
         const pair: Card[] = [
           { id: `${question.id}-metonym`, questionId: question.id, side: "metonym", label: question.metonym },
           { id: `${question.id}-referent`, questionId: question.id, side: "referent", label: question.referent },
         ];
         return index % 2 === 0 ? pair : pair.reverse();
       }),
-    [questions],
+    [roundQuestions],
   );
+  const [cards, setCards] = useState<Card[]>(orderedCards);
   const [selected, setSelected] = useState<Card | null>(null);
   const [matched, setMatched] = useState<Set<string>>(new Set());
   const [feedback, setFeedback] = useState("請先選一張借代詞或實際所指卡。 ");
   const [explanation, setExplanation] = useState("");
   const [attempts, setAttempts] = useState(0);
   const awarded = useRef(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setCards(shuffle(orderedCards)), 0);
+    return () => window.clearTimeout(timer);
+  }, [orderedCards]);
+
+  function restart() {
+    setCards(shuffle(orderedCards));
+    setSelected(null);
+    setMatched(new Set());
+    setFeedback("新一局已重新洗牌，請開始偵查。");
+    setExplanation("");
+    setAttempts(0);
+    awarded.current = false;
+  }
 
   function choose(card: Card) {
     if (matched.has(card.questionId)) return;
@@ -51,7 +71,7 @@ export function MatchGame({ questions }: MatchGameProps) {
     setAttempts((value) => value + 1);
     const isMatch = selected.questionId === card.questionId && selected.side !== card.side;
     if (isMatch) {
-      const question = questions.find((item) => item.id === card.questionId);
+      const question = roundQuestions.find((item) => item.id === card.questionId);
       setMatched((current) => new Set(current).add(card.questionId));
       setFeedback(`配對成功：「${question?.metonym}」代稱「${question?.referent}」。`);
       setExplanation(question?.rationale ?? "");
@@ -62,18 +82,18 @@ export function MatchGame({ questions }: MatchGameProps) {
     setSelected(null);
   }
 
-  const complete = matched.size === questions.length;
+  const complete = matched.size === roundQuestions.length;
 
   useEffect(() => {
     if (!complete || awarded.current) return;
     awarded.current = true;
     const progress = loadProgress();
-    saveProgress({
+    saveProgress(recordAchievement({
       ...progress,
       completedZones: Array.from(new Set([...progress.completedZones, "term-match"])),
-      experience: progress.experience + questions.length * 100,
-    });
-  }, [complete, questions.length]);
+      experience: progress.experience + roundQuestions.length * 100,
+    }, { zoneId: "term-match", score: Math.max(0, 1000 - attempts * 50), cardIds: roundQuestions.map((q) => q.id), badge: "配對破案者" }));
+  }, [attempts, complete, roundQuestions]);
 
   return (
     <section className="game-shell" aria-labelledby="game-title">
@@ -83,7 +103,7 @@ export function MatchGame({ questions }: MatchGameProps) {
           <h1 id="game-title">找出借代詞的真正身分</h1>
         </div>
         <div className="game-stats" aria-label="遊戲進度">
-          <span>完成 {matched.size}/{questions.length}</span>
+          <span>完成 {matched.size}/{roundQuestions.length}</span>
           <span>嘗試 {attempts} 次</span>
         </div>
       </div>
@@ -103,6 +123,8 @@ export function MatchGame({ questions }: MatchGameProps) {
               aria-pressed={isSelected}
               disabled={isMatched}
               aria-label={`${card.side === "metonym" ? "借代詞" : "實際所指"}：${card.label}`}
+              data-question-id={card.questionId}
+              data-card-side={card.side}
             >
               <span className="card-kind">{card.side === "metonym" ? "借代詞" : "實際所指"}</span>
               <strong>{card.label}</strong>
@@ -117,6 +139,8 @@ export function MatchGame({ questions }: MatchGameProps) {
         <p>{complete ? `你用了 ${attempts} 次嘗試完成所有配對。` : feedback}</p>
         {explanation && <p className="explanation">解析：{explanation}</p>}
       </div>
+      {complete && <div className="completion-actions"><button className="button primary" type="button" onClick={restart}>重新洗牌再玩一局</button><Link className="button secondary" href="/adventure">回冒險地圖</Link><Link className="button secondary" href="/relation">挑戰關係研究室</Link></div>}
+      {complete && <RewardCard badge="配對破案者" score={Math.max(0, 1000 - attempts * 50)} personalBest={Math.max(1000 - attempts * 50, loadProgress().personalBests?.["term-match"] ?? 0)} solvedCards={loadProgress().solvedCardIds?.length ?? roundQuestions.length} nextTarget="到關係研究室說出借代雙方的關聯" />}
     </section>
   );
 }

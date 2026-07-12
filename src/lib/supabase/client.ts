@@ -3,6 +3,10 @@ import type { Database } from "@/types/database";
 
 let browserClient: ReturnType<typeof createClient<Database>> | undefined;
 
+export function isSupabaseConfigured(): boolean {
+  return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY);
+}
+
 export function getSupabaseBrowserClient() {
   if (browserClient) return browserClient;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

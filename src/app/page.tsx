@@ -8,22 +8,7 @@ const features = [
 
 export default function HomePage() {
   return (
-    <>
-      <a className="skip-link" href="#main-content">跳到主要內容</a>
-      <header className="site-header">
-        <Link className="brand" href="/" aria-label="借代偵探學院首頁">
-          <span className="brand-mark" aria-hidden="true">代</span>
-          <span>借代偵探學院</span>
-        </Link>
-        <nav aria-label="主要導覽">
-          <Link href="/adventure">冒險地圖</Link>
-          <Link href="/join">加入課堂</Link>
-          <Link href="/review">錯題復習</Link>
-          <Link href="/teacher">教師入口</Link>
-        </nav>
-      </header>
-
-      <main id="main-content">
+      <main id="main-content" tabIndex={-1}>
         <section className="hero-section">
           <div className="hero-copy">
             <p className="eyebrow">國文冒險學院・第四學習階段</p>
@@ -31,8 +16,7 @@ export default function HomePage() {
             <p className="hero-lead">杜康為什麼不是人，而是一杯酒？從卡牌配對到古文判讀，成為看穿借代線索的修辭偵探。</p>
             <div className="hero-actions">
               <Link className="button primary" href="/play">開始第一局</Link>
-              <Link className="button secondary" href="/join">輸入課堂活動碼</Link>
-              <Link className="button secondary" href="/adventure">查看冒險地圖</Link>
+              <Link className="hero-text-link" href="/join">已有課堂活動碼？加入課堂</Link>
             </div>
             <p className="privacy-note">免註冊・進度保存在目前裝置・手機即可遊玩</p>
           </div>
@@ -68,8 +52,8 @@ export default function HomePage() {
               </article>
             ))}
           </div>
+          <Link className="section-text-link" href="/adventure">先看看完整冒險地圖</Link>
         </section>
       </main>
-    </>
   );
 }

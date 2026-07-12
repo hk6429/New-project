@@ -3,13 +3,14 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createActivityCode } from "@/domain/classroom/activity-code";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import type { Database } from "@/types/database";
 
 type ClassroomSession = Database["public"]["Tables"]["classroom_sessions"]["Row"];
 type ClassroomStats = { participants: number; responses: number; correctRate: number };
 
 export function TeacherConsole() {
+  const configured = isSupabaseConfigured();
   const [email, setEmail] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const [isTeacher, setIsTeacher] = useState(false);
@@ -46,13 +47,14 @@ export function TeacherConsole() {
   }, []);
 
   useEffect(() => {
+    if (!configured) return;
     const supabase = getSupabaseBrowserClient();
     supabase.auth.getUser().then(({ data }) => refreshTeacherState(data.user));
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       void refreshTeacherState(session?.user ?? null);
     });
     return () => data.subscription.unsubscribe();
-  }, [refreshTeacherState]);
+  }, [configured, refreshTeacherState]);
 
   const refreshStats = useCallback(async (sessionId: string) => {
     const supabase = getSupabaseBrowserClient();
@@ -72,13 +74,16 @@ export function TeacherConsole() {
   useEffect(() => {
     if (!selectedSession) return;
     const supabase = getSupabaseBrowserClient();
-    void refreshStats(selectedSession.id);
+    const timer = window.setTimeout(() => void refreshStats(selectedSession.id), 0);
     const channel = supabase
       .channel(`teacher-session-${selectedSession.id}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "participants", filter: `session_id=eq.${selectedSession.id}` }, () => void refreshStats(selectedSession.id))
       .on("postgres_changes", { event: "*", schema: "public", table: "responses", filter: `session_id=eq.${selectedSession.id}` }, () => void refreshStats(selectedSession.id))
       .subscribe();
-    return () => { void supabase.removeChannel(channel); };
+    return () => {
+      window.clearTimeout(timer);
+      void supabase.removeChannel(channel);
+    };
   }, [refreshStats, selectedSession]);
 
   async function requestLogin(event: FormEvent) {
@@ -129,12 +134,21 @@ export function TeacherConsole() {
     setBusy(false);
   }
 
+  if (!configured) {
+    return <section className="teacher-auth" role="alert"><p className="eyebrow">系統設定提示</p><h1>教師控制臺尚未連接題庫</h1><p>請管理者在 Vercel 設定 Supabase 環境變數後重新部署。學生單機闖關仍可正常使用。</p></section>;
+  }
+
   if (!user) {
     return (
       <section className="teacher-auth" aria-labelledby="teacher-login-title">
         <p className="eyebrow">教師安全登入</p>
         <h1 id="teacher-login-title">用 Email 登入教師控制臺</h1>
         <p>系統會寄送一次性登入連結，不需要設定密碼。</p>
+        <div className="teacher-value-preview" role="region" aria-label="教師控制臺功能預覽">
+          <article><strong>快速開課</strong><span>建立六位數活動碼，學生免 Email 加入。</span></article>
+          <article><strong>即時掌握</strong><span>查看全班參與、作答量與整體正確率。</span></article>
+          <article><strong>安心複核</strong><span>題目須經兩位教師核准，才會正式發布。</span></article>
+        </div>
         <form onSubmit={requestLogin}>
           <label htmlFor="teacher-email">教師 Email</label>
           <input id="teacher-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required autoComplete="email" />
@@ -186,6 +200,11 @@ export function TeacherConsole() {
             <article><span>已加入</span><strong>{stats.participants}</strong><small>位學生</small></article>
             <article><span>已收到</span><strong>{stats.responses}</strong><small>筆作答</small></article>
             <article><span>全班正確率</span><strong>{stats.correctRate}%</strong><small>即時更新</small></article>
+          </div>
+          <div className="class-mission" aria-label="全班共同偵查進度">
+            <div><strong>全班共同線索</strong><span>不公開個人排名，每答一題都幫全班向前一步。</span></div>
+            <progress max={Math.max(10, Math.ceil((stats.responses + 1) / 10) * 10)} value={stats.responses}>{stats.responses} 條線索</progress>
+            <b>{stats.responses} 條</b>
           </div>
           <p className="privacy-note">學生加入或送出答案後，統計會自動更新；不顯示學生 Email 或其他個人資料。</p>
         </section>

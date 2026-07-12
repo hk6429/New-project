@@ -3,7 +3,7 @@ import { ReviewList } from "@/components/progress/review-list";
 
 export default function ReviewPage() {
   return (
-    <main className="page-shell">
+    <main id="main-content" tabIndex={-1} className="page-shell">
       <Link className="back-link" href="/adventure">返回冒險地圖</Link>
       <header className="page-heading">
         <p className="eyebrow">個人錯題簿</p>
@@ -14,4 +14,3 @@ export default function ReviewPage() {
     </main>
   );
 }
-
