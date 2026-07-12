@@ -11,7 +11,7 @@
 
 ## 線上預覽
 
-- [Vercel Preview](https://borrowed-words-preview-20260712-j6wausblu-hk6429s-projects.vercel.app)
+- [Vercel Preview](https://borrowed-words-preview-20260712-hlpqvqtlj-hk6429s-projects.vercel.app)
 - [GitHub repository](https://github.com/hk6429/New-project)
 
 ## 核心特色
